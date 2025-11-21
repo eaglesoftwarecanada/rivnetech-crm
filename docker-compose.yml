@@ -1,0 +1,41 @@
+version: '3.7'
+
+services:
+  redis:
+    image: redis
+  celery:
+    image: rivnetech-crm
+    build:
+      context: ..
+      dockerfile: Dockerfile-local
+    command: celery -A app worker -l info  -B
+    env_file:
+      - .env
+    depends_on:
+      - web
+      - redis
+      - db
+  db:
+    image: rapidfort/microsoft-sql-server-2019-ib:latest
+    hostname: db
+    domainname: db
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    ports:
+      - "1433:1433"
+  web:
+    image: rivnetech-crm
+    build:
+      context: ..
+      dockerfile: Dockerfile-local
+    env_file:
+      - .env
+    command: sh -c "chmod +x ./entrypoint.sh && ./entrypoint.sh"
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db

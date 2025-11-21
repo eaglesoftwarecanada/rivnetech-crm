@@ -1,0 +1,42 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+django = "*"
+django-filter = "*"
+mssql-django = "*"
+pyodbc = "*"
+djangorestframework = "*"
+drf-spectacular = "*"
+django-cors-headers = "*"
+django-debug-toolbar = "*"
+djangorestframework-simplejwt = "*"
+python-decouple = "*"
+pytz = "*"
+sqlparse = "*"
+resend = "*"
+redis = "*"
+django-redis = "*"
+charset-normalizer = "*"
+celery = {extras = ["redis"], version = "*"}
+psycopg2 = "*"
+boto3 = "*"
+gunicorn = "*"
+humanize = "*"
+pillow = "*"
+xlwt = "*"
+djangochannelsrestframework = "*"
+channels-redis = "*"
+websockets = "*"
+uvicorn = "*"
+channels = {extras = ["daphne"], version = "*"}
+psycopg2-binary = "*"
+django-storages = "*"
+django-cleanup = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.12"
