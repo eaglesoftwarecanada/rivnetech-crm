@@ -4,6 +4,8 @@ import time
 from datetime import datetime
 
 import humanize
+from django.utils import timezone
+
 from app import settings
 from healthcheck.models import Inventry
 from utils.ebms_requests import BasicAUTHRequest
@@ -124,18 +126,43 @@ class HealthCheckerSQLMirrorSync(BasicAUTHRequest):
         delta = now - mirror_time
         return humanize.precisedelta(delta, minimum_unit="minutes", format="%0.0f")
 
-    def check_mirror_synced(self):
-        autoid_w_timestamp, timestamp = self.update_or_create_test_record(self.descr_1)
+    def check_mirror_synced(self) -> dict:
+        checked_at = timezone.now()
+
+        autoid_w_timestamp, api_timestamp = self.update_or_create_test_record(self.descr_1)
+
+        result = {
+            "alias": self.db_alias,
+            "ok": False,
+            "status": "unknown",
+            "checked_at": checked_at.isoformat(),
+            "message": "",
+            "api_timestamp": api_timestamp,
+            "mirror_timestamp": None,
+        }
+
         if not autoid_w_timestamp:
-            return
+            result["status"] = "api_error"
+            result["message"] = "Failed to create/update test record via API"
+            return result
 
         time.sleep(self.sync_wait_seconds)
 
         mirror_timestamp = self.get_timestamp_test_record_from_mirror(autoid_w_timestamp)
-        if mirror_timestamp != timestamp:
+        result["mirror_timestamp"] = mirror_timestamp
+
+        if mirror_timestamp != api_timestamp:
             self.send_notification_sync_down()
+            result["status"] = "mirror_out_of_sync"
+            result["ok"] = False
+            result["message"] = "Mirror did not sync in time"
         else:
-            print(f"{self.db_alias} | SQL Mirror Sync is OK")
+            print(f"[{self.db_alias}] SQL Mirror Sync is OK")
+            result["status"] = "ok"
+            result["ok"] = True
+            result["message"] = "SQL Mirror Sync is OK"
+
+        return result
 
     def is_mirror_synced_last_35_minutes(self) -> bool:
         mirror_timestamp = self.get_timestamp_test_record_from_mirror()

@@ -3,6 +3,10 @@ import ast
 import pyodbc
 from decouple import config
 
+from app import settings
+# from healthch
+# eck.models import HealthDatabase
+
 
 class DBConfigError(Exception):
     pass
@@ -100,3 +104,17 @@ def build_healthcheck_dbs():
             ) from exc
 
     return result
+
+# def load_health_dbs():
+#     for entry in HealthDatabase.objects.filter(is_enabled=True):
+#         alias = entry.alias
+#
+#         settings.DATABASES[alias] = {
+#             "ENGINE": get_engine_from_type(entry.type),
+#             "NAME": entry.name,
+#             "USER": entry.user,
+#             "PASSWORD": entry.password,
+#             "HOST": entry.host,
+#             "PORT": entry.port,
+#             "OPTIONS": build_mssql_options() if entry.TYPE == "mssql" else {},
+#         }
