@@ -13,7 +13,7 @@ from .services import cache_key_for_alias, iter_health_db_aliases
 class HealthDatabaseViewSet(ModelViewSet):
     queryset = HealthDatabase.objects.all().order_by("alias")
     serializer_class = HealthDatabaseSerializer
-    # permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminUser]
 
 
 @extend_schema(
