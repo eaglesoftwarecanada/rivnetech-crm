@@ -2,10 +2,18 @@ from drf_spectacular.utils import extend_schema
 from rest_framework.response import Response
 from django.core.cache import cache
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAdminUser
+from rest_framework.viewsets import ModelViewSet
 
-from .serializers import HealthCheckListSerializer
+from .models import HealthDatabase
+from .serializers import HealthCheckListSerializer, HealthDatabaseSerializer
 from .services import cache_key_for_alias, iter_health_db_aliases
+
+
+class HealthDatabaseViewSet(ModelViewSet):
+    queryset = HealthDatabase.objects.all().order_by("alias")
+    serializer_class = HealthDatabaseSerializer
+    # permission_classes = [IsAdminUser]
 
 
 @extend_schema(

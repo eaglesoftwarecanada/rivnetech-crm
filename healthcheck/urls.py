@@ -1,11 +1,13 @@
 from rest_framework.routers import DefaultRouter
 from django.urls import path, include
 
-from healthcheck.views import healthcheck_status
+from healthcheck.views import HealthDatabaseViewSet, healthcheck_status
 
-router = DefaultRouter()
 
 app_name = 'stages'
+
+router = DefaultRouter()
+router.register(r"health-databases", HealthDatabaseViewSet, basename="healthdatabase")
 
 urlpatterns = [
     path("healthcheck/", healthcheck_status, name="healthcheck_status"),
