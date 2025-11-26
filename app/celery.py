@@ -10,7 +10,7 @@ app.config_from_object("django.conf:settings", namespace="CELERY")
 app.conf.beat_schedule = {
     "run-every-30-minutes-check-mirrors": {
         "task": "healthcheck.tasks.task_schedule_all_mirrors",
-        "schedule": 1800.0,  # 30 minutes
+        "schedule": 180.0,  # 30 minutes
     },
 }
 

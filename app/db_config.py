@@ -1,3 +1,5 @@
+import copy
+
 import pyodbc
 
 from app import settings
@@ -36,63 +38,31 @@ def ensure_db_alias_configured(cfg: HealthDatabase) -> str:
 
     engine = get_engine_from_type(cfg.type)
 
-    db_config = {
-        "ENGINE": engine,
-        "NAME": cfg.name,
-        "USER": cfg.db_user,
-        "PASSWORD": cfg.db_password,
-        "HOST": cfg.host,
-        "PORT": cfg.port,
-    }
+    try:
+        base = copy.deepcopy(connections.databases["default"])
+    except KeyError:
+        base = {}
+
+    base.update(
+        {
+            "ENGINE": engine,
+            "NAME": cfg.name,
+            "USER": cfg.db_user,
+            "PASSWORD": cfg.db_password,
+            "HOST": cfg.host,
+            "PORT": cfg.port,
+        }
+    )
 
     if engine == "mssql":
-        db_config["OPTIONS"] = build_mssql_options()
+        options = base.get("OPTIONS", {})
+        options.update(build_mssql_options())
+        base["OPTIONS"] = options
 
-    settings.DATABASES[alias] = db_config
-    connections.databases[alias] = db_config
+    settings.DATABASES[alias] = base
+    connections.databases[alias] = base
 
     return alias
-
-# def build_databases():
-#     databases = {}
-#
-#     db_type = config("DB_TYPE", default="postgres")
-#     engine = get_engine_from_type(db_type)
-#
-#     default_cfg = {
-#         "ENGINE": engine,
-#         "NAME": config("DB_NAME"),
-#         "USER": config("DB_USER"),
-#         "PASSWORD": config("DB_PASS"),
-#         "HOST": config("DB_HOST", default="localhost"),
-#         "PORT": config("DB_PORT", cast=int, default=5432),
-#     }
-#
-#     if engine == "mssql":
-#         default_cfg["OPTIONS"] = build_mssql_options()
-#
-#     databases["default"] = default_cfg
-#
-#     health_creds = _load_health_creds()
-#
-#     for alias, params in health_creds.items():
-#         db_engine = get_engine_from_type(params.get("TYPE", "mssql"))
-#
-#         cfg = {
-#             "ENGINE": db_engine,
-#             "NAME": params["NAME"],
-#             "USER": params["USER"],
-#             "PASSWORD": params["PASSWORD"],
-#             "HOST": params.get("HOST", "localhost"),
-#             "PORT": params.get("PORT", 1433),
-#         }
-#
-#         if db_engine == "mssql":
-#             cfg["OPTIONS"] = build_mssql_options()
-#
-#         databases[alias] = cfg
-#
-#     return databases
 
 def load_health_dbs():
     for entry in HealthDatabase.objects.filter(is_enabled=True):
