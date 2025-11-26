@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 from datetime import timedelta
 from pathlib import Path
+from urllib.parse import urlparse
 
 from decouple import config, Csv
 
@@ -46,6 +47,7 @@ INSTALLED_APPS = [
     'drf_spectacular',
     'corsheaders',
     'debug_toolbar',
+    'channels',
 
     'healthcheck',
 ]
@@ -80,6 +82,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'app.wsgi.application'
+ASGI_APPLICATION = 'app.asgi.application'
 
 
 # Database
@@ -176,6 +179,17 @@ CACHES = {
         "BACKEND": "django.core.cache.backends.redis.RedisCache",
         "LOCATION": CELERY_BROKER_URL,
     }
+}
+
+redis_parsed = urlparse(CELERY_BROKER_URL)
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [(redis_parsed.hostname, redis_parsed.port)],
+        },
+    },
 }
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
